@@ -1,0 +1,80 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:unggul_mobile/core/components/atom/atom_appbar.dart';
+import 'package:unggul_mobile/core/components/atom/atom_list_item.dart';
+import 'package:unggul_mobile/core/components/molecule/molecule_list_view.dart';
+import 'package:unggul_mobile/core/util/util.dart';
+import 'package:unggul_mobile/feature/master/customer/presentation/bloc/customer_cubit.dart';
+import 'package:unggul_mobile/feature/master/stock/presentation/bloc/stock_cubit.dart';
+import 'package:unggul_mobile/feature/transaction/sale/presentation/bloc/sale_cubit.dart';
+import 'package:unggul_mobile/feature/transaction/sale/presentation/bloc/sale_state.dart';
+
+class SalePage extends StatefulWidget {
+  const SalePage({super.key});
+
+  @override
+  State<SalePage> createState() => _SalePageState();
+}
+
+class _SalePageState extends State<SalePage> {
+  @override
+  void initState() {
+    context.read<CustomerCubit>().getCustomers();
+    context.read<StockCubit>().getStocks();
+    context.read<SaleCubit>().getSales();
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AtomAppbar(
+        'Penjualan',
+        add: () {
+          context.go('/sales/create');
+        },
+      ),
+      body: BlocListener<SaleCubit, SaleState>(
+        listener: (context, state) {
+          if (state.isLoading == true) {
+            context.loading(true);
+          } else if (state.isLoading == false) {
+            context.loading(false);
+          } else if (state.error != null) {
+            context.snackbarError(state.error);
+          } else if (state.message != null) {
+            context.snackbarSuccess(state.message ?? '');
+          }
+        },
+        child: BlocBuilder<SaleCubit, SaleState>(
+          builder: (context, state) {
+            if (state.sales != null && (state.sales ?? []).isEmpty) {
+              return Center(child: Text('Tidak ada data'));
+            }
+            return MoleculeListView(
+              itemBuilder: (c, id) {
+                final sale = state.sales?[id];
+
+                return AtomListItem(
+                  leading: '#${sale?.note}',
+                  title: sale?.customer?.name,
+                  // subtitle: formatCurrency(sale?.subtotal),
+                  subtitle: sale?.date,
+
+                  edit: () {
+                    context.go('/sales/${sale?.note}');
+                  },
+                  delete: () {
+                    context.read<SaleCubit>().deleteSale(sale?.note ?? '');
+                  },
+                );
+              },
+              itemCount: state.sales?.length ?? 0,
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
