@@ -16,7 +16,7 @@ String formatDate(dynamic date, {String format = "dd MMMM yyyy"}) {
   return DateFormat(format, "id").format(date);
 }
 
-String formatCurrency(dynamic value) {
+String formatCurrency(dynamic value, {String? symbol}) {
   if (value == null) return "";
   if (value is String && value.isNotEmpty) {
     value = double.tryParse(value);
@@ -24,7 +24,7 @@ String formatCurrency(dynamic value) {
   }
   return NumberFormat.currency(
     locale: "id",
-    symbol: "Rp ",
+    symbol: symbol ?? "Rp ",
     decimalDigits: 0,
   ).format(value);
 }

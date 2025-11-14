@@ -33,14 +33,14 @@ class _StockFormPageState extends State<StockFormPage> {
   void initForEdit() {
     final stocks = context.read<StockCubit>().state.stocks ?? [];
     final stock = stocks.firstWhere(
-      (e) => e?.code == widget.id,
+      (e) => e?.id == widget.id,
       orElse: () => null,
     );
     if (stock != null) {
       code.text = stock.code ?? '';
       name.text = stock.name ?? '';
       category.text = stock.category ?? '';
-      price.text = stock.price?.toString() ?? '';
+      price.text = formatCurrency(stock.price, symbol: '');
     }
   }
 
@@ -90,6 +90,13 @@ class _StockFormPageState extends State<StockFormPage> {
                   controller: price,
                   hint: 'Harga',
                   keyboardType: TextInputType.number,
+                  prefixText: 'Rp ',
+                  onChanged: (text) {
+                    if (text.isNotEmpty) {
+                      final value = text.replaceAll('.', '');
+                      price.text = formatCurrency(value, symbol: '');
+                    }
+                  },
                   validator: (text) =>
                       textFieldValidator(label: 'Harga', value: text),
                 ),
@@ -108,7 +115,7 @@ class _StockFormPageState extends State<StockFormPage> {
                   code: code.text,
                   name: name.text,
                   category: category.text,
-                  price: double.tryParse(price.text),
+                  price: double.tryParse(price.text.replaceAll('.', '')),
                 );
                 form.manageStock(request: request);
               }

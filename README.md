@@ -5,6 +5,7 @@ Aplikasi mobile untuk CRUD Simple.
 ## Deskripsi
 
 Project ini merupakan aplikasi mobile yang dibuat menggunakan Flutter.
+Aplikasi ini mengimplementasikan Clean Architecture dan menggunakan BLoC untuk state management, get_it untuk dependency injection, dan dio untuk HTTP client.
 
 ## Instalasi
 
@@ -24,6 +25,5 @@ Project ini merupakan aplikasi mobile yang dibuat menggunakan Flutter.
 5. Jalankan aplikasi.
    ```bash
    flutter run
+   ``
    ```
-
-## Memulai

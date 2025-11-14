@@ -72,6 +72,67 @@ class _SaleFormPageState extends State<SaleFormPage> {
     }
   }
 
+  String subtotal() {
+    double subs = 0;
+    final count = productsRequest.map((e) => (e?.price ?? 0) * (e?.qty ?? 1));
+    if (count.isNotEmpty) {
+      subs = count.reduce((a, b) => a + b);
+    }
+
+    return formatCurrency(subs);
+  }
+
+  void selectProduct(StockEntityData? value, int id) {
+    if (value?.code != null) {
+      final currentCode = productsRequest[id]?.code;
+      productsRequest[id] = productsRequest[id]?.copyWith(
+        code: value?.code,
+        price: value?.price,
+      );
+      setState(() {
+        if (currentCode != null) {
+          stocks.add(
+            stocksTemp.firstWhereOrNull((e) => e?.code == currentCode),
+          );
+        }
+        stocks.removeWhere((e) => e?.code == value?.code);
+      });
+    }
+  }
+
+  void deleteProduct(int id) {
+    if (productsRequest[id]?.code != null) {
+      final stock = stocksTemp.firstWhereOrNull(
+        (e) => e?.code == productsRequest[id]?.code,
+      );
+
+      setState(() => stocks.add(stock));
+    }
+    productsRequest.removeAt(id);
+
+    setState(() => products.removeAt(id));
+  }
+
+  void submit() {
+    final validate =
+        customer?.id != null &&
+        productsRequest.isNotEmpty &&
+        productsRequest.every((e) => e?.code != null && (e?.qty ?? 0) > 0);
+    if (validate) {
+      final form = context.read<SaleFormCubit>();
+      final request = SaleRequest(
+        customerId: customer?.id,
+        date: formatDate(date, format: 'yyyy-MM-dd'),
+        products: productsRequest
+            .map((e) => StockModelData(code: e?.code, qty: e?.qty))
+            .toList(),
+      );
+      form.manageSales(id: widget.id, request: request);
+    } else {
+      context.snackbarError(ErrorEntity(message: 'Lengkapi form'));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<SaleFormCubit, SaleFormState>(
@@ -151,17 +212,7 @@ class _SaleFormPageState extends State<SaleFormPage> {
                                 label: 'Produk',
                                 controller: e['code'],
                                 margin: EdgeInsets.zero,
-                                onSelected: (value) {
-                                  if (value?.code != null) {
-                                    productsRequest[id] = productsRequest[id]
-                                        ?.copyWith(code: value?.code);
-                                    setState(
-                                      () => stocks.removeWhere(
-                                        (e) => e?.code == value?.code,
-                                      ),
-                                    );
-                                  }
-                                },
+                                onSelected: (v) => selectProduct(v, id),
                                 items: stocks
                                     .map(
                                       (e) => DropdownMenuEntry(
@@ -178,28 +229,15 @@ class _SaleFormPageState extends State<SaleFormPage> {
                                 controller: e['qty'],
                                 keyboardType: TextInputType.number,
                                 margin: EdgeInsets.zero,
-                                onChanged: (v) =>
-                                    productsRequest[id] = productsRequest[id]
-                                        ?.copyWith(qty: int.tryParse(v)),
+                                onChanged: (v) => setState(
+                                  () =>
+                                      productsRequest[id] = productsRequest[id]
+                                          ?.copyWith(qty: int.tryParse(v) ?? 0),
+                                ),
                               ),
                             ),
                             IconButton(
-                              onPressed: () {
-                                if (productsRequest[id]?.code != null) {
-                                  final stock = stocksTemp.firstWhereOrNull(
-                                    (e) => e?.code == productsRequest[id]?.code,
-                                  );
-
-                                  setState(() {
-                                    stocks.add(stock);
-                                  });
-                                }
-                                productsRequest.removeAt(id);
-
-                                setState(() {
-                                  products.removeAt(id);
-                                });
-                              },
+                              onPressed: () => deleteProduct(id),
                               icon: Icon(CupertinoIcons.delete),
                             ),
                           ],
@@ -212,29 +250,21 @@ class _SaleFormPageState extends State<SaleFormPage> {
           ),
         ),
         bottomNavigationBar: BottomAppBar(
-          child: FilledButton(
-            onPressed: () {
-              final validate =
-                  customer?.id != null &&
-                  productsRequest.isNotEmpty &&
-                  productsRequest.every(
-                    (e) => e?.code != null && (e?.qty ?? 0) > 0,
-                  );
-              if (validate) {
-                final form = context.read<SaleFormCubit>();
-                final request = SaleRequest(
-                  customerId: customer?.id,
-                  date: formatDate(date, format: 'yyyy-MM-dd'),
-                  products: productsRequest
-                      .map((e) => StockModelData(code: e?.code, qty: e?.qty))
-                      .toList(),
-                );
-                form.manageSales(id: widget.id, request: request);
-              } else {
-                context.snackbarError(ErrorEntity(message: 'Lengkapi form'));
-              }
-            },
-            child: Text('Simpan'),
+          child: Row(
+            spacing: 8,
+            children: [
+              Expanded(
+                child: Text(
+                  subtotal(),
+                  textAlign: TextAlign.left,
+                  style: context.textStyle.titleMedium,
+                ),
+              ),
+              Expanded(
+                flex: 2,
+                child: FilledButton(onPressed: submit, child: Text('Simpan')),
+              ),
+            ],
           ),
         ),
       ),

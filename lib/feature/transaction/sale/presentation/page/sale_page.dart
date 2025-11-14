@@ -59,9 +59,7 @@ class _SalePageState extends State<SalePage> {
                 return AtomListItem(
                   leading: '#${sale?.note}',
                   title: sale?.customer?.name,
-                  // subtitle: formatCurrency(sale?.subtotal),
-                  subtitle: sale?.date,
-
+                  subtitle: formatCurrency(sale?.subtotal),
                   edit: () {
                     context.go('/sales/${sale?.note}');
                   },
