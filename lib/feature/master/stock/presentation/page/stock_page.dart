@@ -40,7 +40,9 @@ class _StockPageState extends State<StockPage> {
         },
         child: BlocBuilder<StockCubit, StockState>(
           builder: (context, state) {
-            if (state.stocks != null && (state.stocks ?? []).isEmpty) {
+            if (state.stocks == null) {
+              return Center(child: CircularProgressIndicator());
+            } else if ((state.stocks ?? []).isEmpty) {
               return Center(child: Text('Tidak ada data'));
             }
             return MoleculeListView(

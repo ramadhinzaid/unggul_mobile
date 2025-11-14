@@ -44,7 +44,9 @@ class _CustomerPageState extends State<CustomerPage> {
         },
         child: BlocBuilder<CustomerCubit, CustomerState>(
           builder: (context, state) {
-            if (state.customers != null && (state.customers ?? []).isEmpty) {
+            if (state.customers == null) {
+              return Center(child: CircularProgressIndicator());
+            } else if ((state.customers ?? []).isEmpty) {
               return Center(child: Text('Tidak ada data'));
             }
             return MoleculeListView(

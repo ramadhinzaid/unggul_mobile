@@ -49,7 +49,9 @@ class _SalePageState extends State<SalePage> {
         },
         child: BlocBuilder<SaleCubit, SaleState>(
           builder: (context, state) {
-            if (state.sales != null && (state.sales ?? []).isEmpty) {
+            if (state.sales == null) {
+              return Center(child: CircularProgressIndicator());
+            } else if ((state.sales ?? []).isEmpty) {
               return Center(child: Text('Tidak ada data'));
             }
             return MoleculeListView(
