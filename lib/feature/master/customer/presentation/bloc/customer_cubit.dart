@@ -18,7 +18,7 @@ class CustomerCubit extends Cubit<CustomerState> {
         emit(state.copyWith(error: error));
       },
       (response) {
-        emit(state.copyWith(customers: response.dataDetail));
+        emit(state.copyWith(customers: response.dataDetail ?? []));
       },
     );
   }

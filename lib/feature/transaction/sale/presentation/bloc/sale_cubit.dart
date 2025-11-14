@@ -17,7 +17,7 @@ class SaleCubit extends Cubit<SaleState> {
         emit(state.copyWith(error: error));
       },
       (response) {
-        emit(state.copyWith(sales: response.dataDetail));
+        emit(state.copyWith(sales: response.dataDetail ?? []));
       },
     );
   }

@@ -17,7 +17,7 @@ class StockCubit extends Cubit<StockState> {
         emit(state.copyWith(error: error));
       },
       (response) {
-        emit(state.copyWith(stocks: response.dataDetail));
+        emit(state.copyWith(stocks: response.dataDetail ?? []));
       },
     );
   }

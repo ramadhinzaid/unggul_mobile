@@ -3,8 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:unggul_mobile/core/components/atom/atom_appbar.dart';
 import 'package:unggul_mobile/core/components/atom/atom_list_item.dart';
-import 'package:unggul_mobile/core/components/molecule/molecule_list_view.dart';
+import 'package:unggul_mobile/core/components/template/body_layout.dart';
 import 'package:unggul_mobile/core/util/util.dart';
+import 'package:unggul_mobile/feature/master/stock/domain/entity/stock_entity.dart';
 import 'package:unggul_mobile/feature/master/stock/presentation/bloc/stock_cubit.dart';
 import 'package:unggul_mobile/feature/master/stock/presentation/bloc/stock_state.dart';
 
@@ -39,31 +40,17 @@ class _StockPageState extends State<StockPage> {
           }
         },
         child: BlocBuilder<StockCubit, StockState>(
-          builder: (context, state) {
-            if (state.stocks == null) {
-              return Center(child: CircularProgressIndicator());
-            } else if ((state.stocks ?? []).isEmpty) {
-              return Center(child: Text('Tidak ada data'));
-            }
-            return MoleculeListView(
-              itemBuilder: (c, id) {
-                final stock = state.stocks?[id];
-                return AtomListItem(
-                  leading: '#${stock?.code}',
-                  title: '${stock?.name}',
-                  subtitle:
-                      '${stock?.category}, ${formatCurrency(stock?.price)}',
-                  edit: () {
-                    context.go('/stocks/${stock?.id}');
-                  },
-                  delete: () {
-                    context.read<StockCubit>().deleteStock(stock?.id ?? '');
-                  },
-                );
-              },
-              itemCount: state.stocks?.length ?? 0,
-            );
-          },
+          builder: (context, state) => BodyLayout<StockEntityData>(
+            items: state.stocks,
+            builder: (stock) => AtomListItem(
+              leading: '#${stock?.code}',
+              title: '${stock?.name}',
+              subtitle: '${stock?.category}, ${formatCurrency(stock?.price)}',
+              edit: () => context.go('/stocks/${stock?.id}'),
+              delete: () =>
+                  context.read<StockCubit>().deleteStock(stock?.id ?? ''),
+            ),
+          ),
         ),
       ),
     );
